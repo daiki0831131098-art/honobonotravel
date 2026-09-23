@@ -31,7 +31,7 @@ function renderCustomSpots(trip) {
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'custom-spot';
-    item.innerHTML = `<span class="custom-spot-number">${String(index + 1).padStart(2, '0')}</span><div><strong></strong><span></span></div><i></i><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
+    item.innerHTML = `<span class="custom-spot-number">${String.fromCharCode(65 + index)}</span><div><strong></strong><span></span></div><i></i><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
     item.querySelector('strong').textContent = spot.name;
     item.querySelector('span:nth-child(2)').textContent = spot.address;
     item.querySelector('i').textContent = spot.category || 'SPOT';
@@ -45,6 +45,7 @@ function renderHomeMap(trip) {
   const pinList = document.getElementById('homePinList');
   const mapLink = document.getElementById('openGoogleMapBtn');
   pinList.replaceChildren();
+  pinList.hidden = spots.length === 0;
   if (!spots.length) {
     map.innerHTML = '<div class="map-placeholder"><span>⌖</span><strong>場所を追加すると、ここにピンが表示されます</strong><small>Google Maps</small></div>';
     mapLink.href = 'https://www.google.com/maps';
@@ -56,7 +57,7 @@ function renderHomeMap(trip) {
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'home-pin';
-    item.innerHTML = `<span class="pin-index">${index + 1}</span><div><strong></strong><small></small></div><a target="_blank" rel="noreferrer" aria-label="Google Mapsで開く">↗</a><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
+    item.innerHTML = `<span class="pin-index">${String.fromCharCode(65 + index)}</span><div><strong></strong><small></small></div><a target="_blank" rel="noreferrer" aria-label="Google Mapsで開く">↗</a><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
     item.querySelector('strong').textContent = spot.name;
     item.querySelector('small').textContent = spot.address;
     item.querySelector('a').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
