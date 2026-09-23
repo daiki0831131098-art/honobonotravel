@@ -20,10 +20,12 @@
       <p class="sidebar-caption">旅を、物語に。</p>
       <div class="trip-switcher">
         <div class="trip-switcher-head"><span class="eyebrow">MY TRIPS</span><button id="newTripBtn" aria-label="新しい旅行プランを作成">＋</button></div>
+        <label class="trip-search"><span>⌕</span><input id="tripSearchInput" type="search" placeholder="プランを検索" autocomplete="off"><button id="clearTripSearch" type="button" aria-label="検索をクリア">×</button></label>
         <div class="trip-options" id="tripOptions">
           <button class="trip-option active" data-trip="setouchi"><span class="trip-color coral"></span><span><strong>瀬戸内、光の島へ</strong><small>09.20 — 09.23</small></span><b>✓</b></button>
           <button class="trip-option" data-trip="hokkaido"><span class="trip-color blue"></span><span><strong>北の大地をめぐる</strong><small>10.11 — 10.15</small></span><b>✓</b></button>
         </div>
+        <p class="trip-search-empty" id="tripSearchEmpty" hidden>該当するプランがありません</p>
       </div>
       <nav class="main-nav" aria-label="メインナビゲーション">
         <button class="nav-item active" data-view="plan"><span class="nav-icon">✦</span><span>旅を計画する</span><span class="nav-count">01</span></button>

@@ -87,6 +87,18 @@ function addTripOption(tripId) {
   document.getElementById('tripOptions').append(option);
 }
 
+function filterTrips(query) {
+  const normalizedQuery = query.trim().toLowerCase();
+  let visibleCount = 0;
+  document.querySelectorAll('.trip-option').forEach((option) => {
+    const searchableText = option.textContent.toLowerCase();
+    const matches = !normalizedQuery || searchableText.includes(normalizedQuery);
+    option.hidden = !matches;
+    if (matches) visibleCount += 1;
+  });
+  document.getElementById('tripSearchEmpty').hidden = visibleCount > 0;
+}
+
 function renderTrip(tripId, notify = true) {
   const trip = tripPlans[tripId];
   if (!trip) return;
@@ -217,7 +229,15 @@ document.getElementById('tripForm').addEventListener('submit', (event) => {
   addTripOption(tripId);
   closeTripModal();
   tripNameInput.value = '';
+  filterTrips(document.getElementById('tripSearchInput').value);
   renderTrip(tripId);
+});
+document.getElementById('tripSearchInput').addEventListener('input', (event) => filterTrips(event.target.value));
+document.getElementById('clearTripSearch').addEventListener('click', () => {
+  const input = document.getElementById('tripSearchInput');
+  input.value = '';
+  filterTrips('');
+  input.focus();
 });
 function openSpotModal() {
   document.getElementById('spotModal').hidden = false;
@@ -409,4 +429,5 @@ const sectionObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: '-16% 0px -62% 0px', threshold: [0, 0.25, 0.5] });
 views.forEach((view) => sectionObserver.observe(view));
 Object.keys(savedTripPlans).forEach(addTripOption);
+filterTrips('');
 renderTrip('setouchi', false);
