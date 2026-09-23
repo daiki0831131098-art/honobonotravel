@@ -106,6 +106,8 @@ function renderTrip(tripId, notify = true) {
   document.getElementById('summaryDays').textContent = trip.days;
   document.getElementById('summaryMembers').textContent = trip.members;
   document.getElementById('summaryMood').textContent = trip.mood;
+  const tripOption = document.querySelector(`.trip-option[data-trip="${tripId}"]`);
+  if (tripOption) tripOption.querySelector('small').textContent = trip.shortDates;
   document.getElementById('itineraryMeta').textContent = isTemplateTrip ? `4 DAYS · ${8 + spotsCount(trip)} PLACES` : `${spotsCount(trip)} PLACES`;
   document.querySelector('.plan-view').classList.toggle('blank-mode', isBlankTrip);
   document.querySelector('.plan-view').classList.toggle('empty-mode', isBlankTrip && !hasSpots);
@@ -122,6 +124,46 @@ function renderTrip(tripId, notify = true) {
 
 function spotsCount(trip) {
   return trip.spots ? trip.spots.length : 0;
+}
+
+function splitTripTitle(title) {
+  const separator = title.indexOf('、');
+  if (separator < 0) return { prefix: '', accent: `${title.replace(/[。]+$/, '')}。` };
+  return { prefix: title.slice(0, separator + 1), accent: `${title.slice(separator + 1).replace(/[。]+$/, '')}。` };
+}
+
+function parseTripDates(trip) {
+  const match = trip.dates?.match(/(\d{4})\.(\d{2})\.(\d{2})\s*—\s*(?:(\d{4})\.)?(\d{2})\.(\d{2})/);
+  if (!match) return { start: '', end: '' };
+  return { start: `${match[1]}-${match[2]}-${match[3]}`, end: `${match[4] || match[1]}-${match[5]}-${match[6]}` };
+}
+
+function displayDate(value) {
+  if (!value) return '';
+  const [year, month, day] = value.split('-');
+  return `${year}.${month}.${day}`;
+}
+
+function shortDateRange(start, end) {
+  if (!start || !end) return '未設定';
+  return `${start.slice(5).replace('-', '.')} — ${end.slice(5).replace('-', '.')}`;
+}
+
+function openTripEditModal() {
+  const trip = tripPlans[activeTripId];
+  if (!trip) return;
+  const dates = parseTripDates(trip);
+  document.getElementById('editTripName').value = trip.title;
+  document.getElementById('editTripStart').value = dates.start;
+  document.getElementById('editTripEnd').value = dates.end;
+  document.getElementById('editTripMembers').value = trip.members || 1;
+  document.getElementById('editTripMood').value = trip.mood || '';
+  document.getElementById('tripEditModal').hidden = false;
+  document.getElementById('editTripName').focus();
+}
+
+function closeTripEditModal() {
+  document.getElementById('tripEditModal').hidden = true;
 }
 
 function showToast(message) {
@@ -289,7 +331,43 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
   renderTrip(activeTripId);
   showToast(`${deletedSpot.name} を削除しました`);
 });
-document.getElementById('editTripBtn').addEventListener('click', () => showToast('旅の基本情報を編集できます'));
+document.getElementById('editTripBtn').addEventListener('click', openTripEditModal);
+document.getElementById('tripTitleButton').addEventListener('click', openTripEditModal);
+document.getElementById('tripTitleButton').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    openTripEditModal();
+  }
+});
+document.getElementById('closeTripEditModal').addEventListener('click', closeTripEditModal);
+document.getElementById('tripEditModal').addEventListener('click', (event) => {
+  if (event.target.id === 'tripEditModal') closeTripEditModal();
+});
+document.getElementById('tripEditForm').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const trip = tripPlans[activeTripId];
+  const title = document.getElementById('editTripName').value.trim();
+  const start = document.getElementById('editTripStart').value;
+  const end = document.getElementById('editTripEnd').value;
+  if (!trip || !title) return;
+  if ((start && !end) || (!start && end) || (start && end && end < start)) {
+    showToast('開始日と終了日を正しく入力してください');
+    return;
+  }
+  const titleParts = splitTripTitle(title);
+  trip.title = title;
+  trip.prefix = titleParts.prefix;
+  trip.accent = titleParts.accent;
+  trip.members = Math.max(1, Number(document.getElementById('editTripMembers').value) || 1);
+  trip.mood = document.getElementById('editTripMood').value.trim() || 'これから決める';
+  trip.dates = start && end ? `${displayDate(start)} — ${displayDate(end)}` : '日程未設定';
+  trip.shortDates = shortDateRange(start, end);
+  trip.days = start && end ? Math.round((new Date(`${end}T00:00:00`) - new Date(`${start}T00:00:00`)) / 86400000) + 1 : 0;
+  saveTripPlans();
+  closeTripEditModal();
+  renderTrip(activeTripId);
+  showToast('旅の情報を更新しました');
+});
 document.getElementById('printGuideBtn').addEventListener('click', () => showToast('しおりの印刷画面を準備しています'));
 document.getElementById('createMovieBtn').addEventListener('click', () => showToast('旅ムービーを生成しています…'));
 document.getElementById('folderBtn').addEventListener('click', () => showToast('写真フォルダの選択画面を開きます'));

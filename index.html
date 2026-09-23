@@ -51,7 +51,7 @@
 
       <section class="view plan-view active-view" data-panel="plan">
         <div class="hero-row">
-          <div><p class="kicker">TRIP PLANNER <span>●</span> <span id="tripSeason">2024 AUTUMN</span></p><h1><span id="tripTitlePrefix">瀬戸内、</span><em id="tripTitleAccent">光の島へ。</em></h1><p class="hero-copy">見たい景色と、会いたい人。<br>旅の余白まで、大切に計画しよう。</p></div>
+          <div><p class="kicker">TRIP PLANNER <span>●</span> <span id="tripSeason">2024 AUTUMN</span></p><h1 id="tripTitleButton" class="editable-title" tabindex="0" role="button" aria-label="旅行タイトルを編集"><span id="tripTitlePrefix">瀬戸内、</span><em id="tripTitleAccent">光の島へ。</em></h1><p class="hero-copy">見たい景色と、会いたい人。<br>旅の余白まで、大切に計画しよう。</p></div>
           <div class="hero-note"><span class="pin">✳</span><span>予定は変更できます。<br>気の向くままに、寄り道も。</span></div>
         </div>
         <div class="summary-strip"><div class="summary-item"><span>DATE</span><strong id="summaryDate">09.20 — 09.23</strong></div><div class="summary-item"><span>DAYS</span><strong><span id="summaryDays">4</span> <small>days</small></strong></div><div class="summary-item"><span>MEMBERS</span><strong><span id="summaryMembers">3</span> <small>travellers</small></strong></div><div class="summary-item highlight"><span>MOOD</span><strong id="summaryMood">ゆったり、発見</strong></div><button class="outline-btn" id="editTripBtn">編集する <span>↗</span></button></div>
@@ -92,6 +92,17 @@
       <label for="tripNameInput">旅の名前</label>
       <input id="tripNameInput" name="tripName" type="text" placeholder="例：秋の京都、喫茶店めぐり" maxlength="32" required>
       <button class="primary-btn" type="submit">プランを作成 <span>→</span></button>
+    </form>
+  </div>
+  <div class="modal-backdrop" id="tripEditModal" hidden>
+    <form class="trip-modal trip-edit-modal" id="tripEditForm">
+      <button class="modal-close" type="button" id="closeTripEditModal" aria-label="閉じる">×</button>
+      <span class="section-label">EDIT TRIP</span>
+      <h2>旅の情報を編集</h2>
+      <div class="edit-field"><label for="editTripName">タイトル</label><input id="editTripName" type="text" maxlength="48" required></div>
+      <div class="edit-field-grid"><div class="edit-field"><label for="editTripStart">開始日</label><input id="editTripStart" type="date"></div><div class="edit-field"><label for="editTripEnd">終了日</label><input id="editTripEnd" type="date"></div></div>
+      <div class="edit-field-grid"><div class="edit-field"><label for="editTripMembers">メンバー</label><input id="editTripMembers" type="number" min="1" max="99"></div><div class="edit-field"><label for="editTripMood">旅のムード</label><input id="editTripMood" type="text" maxlength="24"></div></div>
+      <button class="primary-btn" type="submit">変更を保存 <span>✓</span></button>
     </form>
   </div>
   <div class="modal-backdrop" id="spotModal" hidden>
