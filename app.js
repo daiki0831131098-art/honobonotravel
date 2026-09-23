@@ -176,11 +176,15 @@ function showToast(message) {
 function switchView(viewName) {
   navItems.forEach((item) => item.classList.toggle('active', item.dataset.view === viewName));
   views.forEach((view) => {
-    const isActive = view.dataset.panel === viewName;
-    view.hidden = !isActive;
-    view.classList.toggle('active-view', isActive);
+    view.hidden = false;
+    view.classList.toggle('active-view', view.dataset.panel === viewName);
   });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const target = document.querySelector(`[data-panel="${viewName}"]`);
+  if (target) {
+    target.id = viewName;
+    window.location.hash = viewName;
+    setTimeout(() => window.scrollTo(0, Math.max(0, target.getBoundingClientRect().top + window.scrollY - 24)), 0);
+  }
 }
 
 document.querySelectorAll('[data-view]').forEach((item) => item.addEventListener('click', () => switchView(item.dataset.view)));
@@ -397,5 +401,12 @@ document.querySelectorAll('.packing input').forEach((input) => input.addEventLis
   document.querySelector('.packing h2 small').textContent = `${checked} / 6`;
 }));
 
+views.forEach((view) => { view.hidden = false; });
+const sectionObserver = new IntersectionObserver((entries) => {
+  const visibleSections = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+  const currentSection = visibleSections[0]?.target.dataset.panel;
+  if (currentSection) navItems.forEach((item) => item.classList.toggle('active', item.dataset.view === currentSection));
+}, { rootMargin: '-16% 0px -62% 0px', threshold: [0, 0.25, 0.5] });
+views.forEach((view) => sectionObserver.observe(view));
 Object.keys(savedTripPlans).forEach(addTripOption);
 renderTrip('setouchi', false);
