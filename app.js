@@ -11,6 +11,8 @@ Object.assign(tripPlans, savedTripPlans);
 let activeTripId = 'setouchi';
 let selectedSpot = null;
 let pendingDeleteIndex = null;
+let draggedSpotIndex = null;
+const spotColors = ['#ed704e', '#eab344', '#36b7a7', '#5d8fd0', '#c779c9', '#7c83d4'];
 const placeCatalog = [
   { name: '直島・宮浦港', address: '香川県香川郡直島町', lat: 34.4607, lon: 133.9954, category: '移動' },
   { name: '地中美術館', address: '香川県香川郡直島町3449-1', lat: 34.4598, lon: 133.9857, category: '観光' },
@@ -31,7 +33,10 @@ function renderCustomSpots(trip) {
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'custom-spot';
-    item.innerHTML = `<span class="custom-spot-number">${String.fromCharCode(65 + index)}</span><div><strong></strong><span></span></div><i></i><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
+    item.draggable = true;
+    item.dataset.spotIndex = index;
+    item.style.setProperty('--spot-color', spotColors[index % spotColors.length]);
+    item.innerHTML = `<span class="custom-spot-number">${String.fromCharCode(65 + index)}</span><div><strong></strong><span></span></div><i></i><span class="drag-handle" aria-hidden="true">↕</span><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
     item.querySelector('strong').textContent = spot.name;
     item.querySelector('span:nth-child(2)').textContent = spot.address;
     item.querySelector('i').textContent = spot.category || 'SPOT';
@@ -61,14 +66,14 @@ function renderHomeMap(trip) {
   const pins = spots.map((spot, index) => {
     const left = Math.min(82, Math.max(18, 18 + ((spot.lon - minLon) / lonRange) * 64));
     const top = Math.min(82, Math.max(18, 18 + ((maxLat - spot.lat) / latRange) * 64));
-      return `<span class="map-letter-pin" style="left:${left}%;top:${top}%"><b>${String.fromCharCode(65 + index)}</b></span>`;
+      return `<span class="map-letter-pin" style="left:${left}%;top:${top}%;--spot-color:${spotColors[index % spotColors.length]}"><b>${String.fromCharCode(65 + index)}</b></span>`;
   }).join('');
   map.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe><div class="map-pin-overlay" aria-label="地図上の地点ピン">${pins}</div>`;
   mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'home-pin';
-    item.innerHTML = `<span class="pin-index">${String.fromCharCode(65 + index)}</span><div><strong></strong><small></small></div><a target="_blank" rel="noreferrer" aria-label="Google Mapsで開く">↗</a><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
+    item.innerHTML = `<span class="pin-index" style="--spot-color:${spotColors[index % spotColors.length]}">${String.fromCharCode(65 + index)}</span><div><strong></strong><small></small></div><a target="_blank" rel="noreferrer" aria-label="Google Mapsで開く">↗</a><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
     item.querySelector('strong').textContent = spot.name;
     item.querySelector('small').textContent = spot.address;
     item.querySelector('a').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
@@ -203,6 +208,39 @@ document.querySelectorAll('[data-view]').forEach((item) => item.addEventListener
 document.getElementById('tripOptions').addEventListener('click', (event) => {
   const option = event.target.closest('.trip-option');
   if (option) renderTrip(option.dataset.trip);
+});
+document.getElementById('customSpotList').addEventListener('dragstart', (event) => {
+  const spot = event.target.closest('.custom-spot');
+  if (!spot) return;
+  draggedSpotIndex = Number(spot.dataset.spotIndex);
+  spot.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', String(draggedSpotIndex));
+});
+document.getElementById('customSpotList').addEventListener('dragover', (event) => {
+  const spot = event.target.closest('.custom-spot');
+  if (!spot) return;
+  event.preventDefault();
+  document.querySelectorAll('.custom-spot').forEach((item) => item.classList.toggle('drag-over', item === spot));
+});
+document.getElementById('customSpotList').addEventListener('drop', (event) => {
+  const target = event.target.closest('.custom-spot');
+  if (!target || draggedSpotIndex === null) return;
+  event.preventDefault();
+  const targetIndex = Number(target.dataset.spotIndex);
+  const trip = tripPlans[activeTripId];
+  if (trip?.spots && draggedSpotIndex !== targetIndex) {
+    const [movedSpot] = trip.spots.splice(draggedSpotIndex, 1);
+    trip.spots.splice(targetIndex, 0, movedSpot);
+    saveTripPlans();
+    renderTrip(activeTripId, false);
+    showToast(`${movedSpot.name} の順番を変更しました`);
+  }
+  draggedSpotIndex = null;
+});
+document.getElementById('customSpotList').addEventListener('dragend', () => {
+  draggedSpotIndex = null;
+  document.querySelectorAll('.custom-spot').forEach((item) => item.classList.remove('dragging', 'drag-over'));
 });
 const tripModal = document.getElementById('tripModal');
 const tripNameInput = document.getElementById('tripNameInput');
