@@ -78,6 +78,16 @@ travel/
 - Google Maps JavaScript APIを使った高度な地図操作にはAPIキーが必要
 - 外部画像が取得できない環境では画像が表示されない場合がある
 
+### Google Mapsの設定
+
+Google Maps上でA・B・Cのマーカーを地図の移動やズームに連動させるには、Google Maps JavaScript APIキーを用意し、ブラウザの開発者コンソールで次を一度実行します。
+
+```javascript
+localStorage.setItem('googleMapsApiKey', 'YOUR_API_KEY')
+```
+
+APIキーが未設定の場合は、Google Mapsの埋め込み表示にフォールバックします。
+
 ## 開発の進め方
 
 大きな機能を一度に作り込まず、まずは旅行プランのデータ構造を安定させます。

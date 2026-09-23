@@ -12,6 +12,9 @@ let activeTripId = 'setouchi';
 let selectedSpot = null;
 let pendingDeleteIndex = null;
 let draggedSpotIndex = null;
+let googleMapInstance = null;
+let googleMapMarkers = [];
+let googleMapsLoader = null;
 const spotColors = ['#ed704e', '#eab344', '#36b7a7', '#5d8fd0', '#c779c9', '#7c83d4'];
 const placeCatalog = [
   { name: '直島・宮浦港', address: '香川県香川郡直島町', lat: 34.4607, lon: 133.9954, category: '移動' },
@@ -57,19 +60,9 @@ function renderHomeMap(trip) {
     return;
   }
   const query = spots.map((spot) => `${spot.name} ${spot.address}`).join(' ');
-  const minLon = Math.min(...spots.map((spot) => spot.lon));
-  const maxLon = Math.max(...spots.map((spot) => spot.lon));
-  const minLat = Math.min(...spots.map((spot) => spot.lat));
-  const maxLat = Math.max(...spots.map((spot) => spot.lat));
-  const lonRange = maxLon - minLon || 0.01;
-  const latRange = maxLat - minLat || 0.01;
-  const pins = spots.map((spot, index) => {
-    const left = Math.min(82, Math.max(18, 18 + ((spot.lon - minLon) / lonRange) * 64));
-    const top = Math.min(82, Math.max(18, 18 + ((maxLat - spot.lat) / latRange) * 64));
-      return `<span class="map-letter-pin" style="left:${left}%;top:${top}%;--spot-color:${spotColors[index % spotColors.length]}"><b>${String.fromCharCode(65 + index)}</b></span>`;
-  }).join('');
-  map.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe><div class="map-pin-overlay" aria-label="地図上の地点ピン">${pins}</div>`;
+  map.innerHTML = `<div id="googleMapCanvas" class="google-map-canvas" aria-label="${trip.title}のGoogle Maps"></div>`;
   mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  renderGoogleMap(trip, spots, query);
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'home-pin';
@@ -78,6 +71,55 @@ function renderHomeMap(trip) {
     item.querySelector('small').textContent = spot.address;
     item.querySelector('a').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
     pinList.append(item);
+  });
+}
+
+function loadGoogleMapsApi() {
+  const apiKey = localStorage.getItem('googleMapsApiKey') || '';
+  if (!apiKey) return Promise.reject(new Error('Google Maps API key is not configured.'));
+  if (window.google?.maps) return Promise.resolve(window.google.maps);
+  if (googleMapsLoader) return googleMapsLoader;
+  googleMapsLoader = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve(window.google.maps);
+    script.onerror = () => reject(new Error('Google Maps API could not be loaded.'));
+    document.head.append(script);
+  });
+  return googleMapsLoader;
+}
+
+function clearGoogleMapMarkers() {
+  googleMapMarkers.forEach((marker) => marker.setMap(null));
+  googleMapMarkers = [];
+}
+
+function createPinIcon(maps, letter, color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48"><path fill="${color}" stroke="white" stroke-width="3" d="M20 2C10 2 3 9 3 18c0 12 17 28 17 28s17-16 17-28C37 9 30 2 20 2z"/><text x="20" y="24" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="15" font-weight="700" fill="white">${letter}</text></svg>`;
+  return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, scaledSize: new maps.Size(40, 48), anchor: new maps.Point(20, 48) };
+}
+
+function renderGoogleMap(trip, spots, query) {
+  const canvas = document.getElementById('googleMapCanvas');
+  if (!canvas) return;
+  loadGoogleMapsApi().then((maps) => {
+    clearGoogleMapMarkers();
+    const firstSpot = spots[0];
+    googleMapInstance = new maps.Map(canvas, { center: { lat: firstSpot.lat, lng: firstSpot.lon }, zoom: spots.length === 1 ? 13 : 8, mapTypeControl: false, streetViewControl: false, fullscreenControl: true, gestureHandling: 'greedy' });
+    const bounds = new maps.LatLngBounds();
+    spots.forEach((spot, index) => {
+      const position = { lat: spot.lat, lng: spot.lon };
+      bounds.extend(position);
+      const marker = new maps.Marker({ map: googleMapInstance, position, title: spot.name, label: { text: String.fromCharCode(65 + index), color: '#ffffff', fontWeight: '700' }, icon: createPinIcon(maps, String.fromCharCode(65 + index), spotColors[index % spotColors.length]) });
+      googleMapMarkers.push(marker);
+    });
+    if (spots.length > 1) googleMapInstance.fitBounds(bounds, 55);
+  }).catch(() => {
+    const fallback = document.getElementById('homeMapContent');
+    if (!fallback) return;
+    fallback.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe><div class="map-key-notice">APIキーを設定すると、A・B・Cピンが地図の移動に連動します</div>`;
   });
 }
 
