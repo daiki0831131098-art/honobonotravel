@@ -52,7 +52,18 @@ function renderHomeMap(trip) {
     return;
   }
   const query = spots.map((spot) => `${spot.name} ${spot.address}`).join(' ');
-  map.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe>`;
+  const minLon = Math.min(...spots.map((spot) => spot.lon));
+  const maxLon = Math.max(...spots.map((spot) => spot.lon));
+  const minLat = Math.min(...spots.map((spot) => spot.lat));
+  const maxLat = Math.max(...spots.map((spot) => spot.lat));
+  const lonRange = maxLon - minLon || 0.01;
+  const latRange = maxLat - minLat || 0.01;
+  const pins = spots.map((spot, index) => {
+    const left = Math.min(82, Math.max(18, 18 + ((spot.lon - minLon) / lonRange) * 64));
+    const top = Math.min(82, Math.max(18, 18 + ((maxLat - spot.lat) / latRange) * 64));
+      return `<span class="map-letter-pin" style="left:${left}%;top:${top}%"><b>${String.fromCharCode(65 + index)}</b></span>`;
+  }).join('');
+  map.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe><div class="map-pin-overlay" aria-label="地図上の地点ピン">${pins}</div>`;
   mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
