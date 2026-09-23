@@ -8,6 +8,35 @@ const tripPlans = {
 };
 const savedTripPlans = JSON.parse(localStorage.getItem('tabiTrips') || '{}');
 Object.assign(tripPlans, savedTripPlans);
+let activeTripId = 'setouchi';
+let selectedSpot = null;
+const placeCatalog = [
+  { name: '直島・宮浦港', address: '香川県香川郡直島町', lat: 34.4607, lon: 133.9954, category: '移動' },
+  { name: '地中美術館', address: '香川県香川郡直島町3449-1', lat: 34.4598, lon: 133.9857, category: '観光' },
+  { name: '豊島美術館', address: '香川県小豆郡土庄町豊島唐櫃607', lat: 34.4826, lon: 134.0856, category: '観光' },
+  { name: '高松港', address: '香川県高松市サンポート', lat: 34.3508, lon: 134.0466, category: '移動' },
+  { name: '島食DOみやんだ', address: '香川県香川郡直島町本村845', lat: 34.4566, lon: 133.9971, category: '食べる' }
+];
+
+function saveTripPlans() {
+  localStorage.setItem('tabiTrips', JSON.stringify(tripPlans));
+}
+
+function renderCustomSpots(trip) {
+  const list = document.getElementById('customSpotList');
+  list.replaceChildren();
+  const spots = trip.spots || [];
+  list.hidden = spots.length === 0;
+  spots.forEach((spot, index) => {
+    const item = document.createElement('article');
+    item.className = 'custom-spot';
+    item.innerHTML = `<span class="custom-spot-number">${String(index + 1).padStart(2, '0')}</span><div><strong></strong><span></span></div><i></i>`;
+    item.querySelector('strong').textContent = spot.name;
+    item.querySelector('span:nth-child(2)').textContent = spot.address;
+    item.querySelector('i').textContent = spot.category || 'SPOT';
+    list.append(item);
+  });
+}
 
 function addTripOption(tripId) {
   if (document.querySelector(`[data-trip="${tripId}"]`)) return;
@@ -23,7 +52,10 @@ function addTripOption(tripId) {
 function renderTrip(tripId, notify = true) {
   const trip = tripPlans[tripId];
   if (!trip) return;
-  const isNewTrip = trip.isNew || trip.days === 0;
+  activeTripId = tripId;
+  const hasSpots = Boolean(trip.spots && trip.spots.length);
+  const isTemplateTrip = tripId === 'setouchi';
+  const isBlankTrip = !isTemplateTrip;
   document.getElementById('currentTripTitle').textContent = trip.title;
   document.getElementById('currentTripDates').textContent = trip.dates;
   document.getElementById('currentTripProgress').textContent = `${trip.progress}%`;
@@ -36,15 +68,21 @@ function renderTrip(tripId, notify = true) {
   document.getElementById('summaryDays').textContent = trip.days;
   document.getElementById('summaryMembers').textContent = trip.members;
   document.getElementById('summaryMood').textContent = trip.mood;
-  document.getElementById('itineraryMeta').textContent = isNewTrip ? '0 DAYS · 0 PLACES' : '4 DAYS · 8 PLACES';
-  document.querySelector('.plan-view').classList.toggle('empty-mode', isNewTrip);
-  document.querySelector('.guide-view').classList.toggle('empty-mode', isNewTrip);
-  document.querySelector('.movie-view').classList.toggle('empty-mode', isNewTrip);
-  document.getElementById('planEmptyState').hidden = !isNewTrip;
-  document.getElementById('guideEmptyState').hidden = !isNewTrip;
-  document.getElementById('movieEmptyState').hidden = !isNewTrip;
+  document.getElementById('itineraryMeta').textContent = isTemplateTrip ? `4 DAYS · ${8 + spotsCount(trip)} PLACES` : `${spotsCount(trip)} PLACES`;
+  document.querySelector('.plan-view').classList.toggle('blank-mode', isBlankTrip);
+  document.querySelector('.plan-view').classList.toggle('empty-mode', isBlankTrip && !hasSpots);
+  document.querySelector('.guide-view').classList.toggle('empty-mode', !isTemplateTrip);
+  document.querySelector('.movie-view').classList.toggle('empty-mode', !isTemplateTrip);
+  document.getElementById('planEmptyState').hidden = isTemplateTrip || hasSpots;
+  document.getElementById('guideEmptyState').hidden = isTemplateTrip;
+  document.getElementById('movieEmptyState').hidden = isTemplateTrip;
+  renderCustomSpots(trip);
   document.querySelectorAll('.trip-option').forEach((option) => option.classList.toggle('active', option.dataset.trip === tripId));
   if (notify) showToast(`${trip.title} に切り替えました`);
+}
+
+function spotsCount(trip) {
+  return trip.spots ? trip.spots.length : 0;
 }
 
 function showToast(message) {
@@ -90,14 +128,97 @@ document.getElementById('tripForm').addEventListener('submit', (event) => {
   if (!name) return;
   const tripId = `trip-${Date.now()}`;
   tripPlans[tripId] = { title: name.trim(), prefix: '', accent: `${name.trim()}。`, dates: '日程未設定', shortDates: '未設定', days: 0, members: 1, mood: 'これから決める', progress: 0, season: 'NEW TRIP', isNew: true };
-  localStorage.setItem('tabiTrips', JSON.stringify(tripPlans));
+  saveTripPlans();
   addTripOption(tripId);
   closeTripModal();
   tripNameInput.value = '';
   renderTrip(tripId);
 });
-document.getElementById('addSpotBtn').addEventListener('click', () => showToast('新しい予定を追加できるようになりました'));
-document.getElementById('emptyAddSpotBtn').addEventListener('click', () => showToast('新しい予定を追加できるようになりました'));
+function openSpotModal() {
+  document.getElementById('spotModal').hidden = false;
+  document.getElementById('spotSearchInput').focus();
+  renderSpotResults(placeCatalog, 'おすすめの場所');
+}
+
+function closeSpotModal() {
+  document.getElementById('spotModal').hidden = true;
+  selectedSpot = null;
+  document.getElementById('spotSelected').hidden = true;
+  document.getElementById('spotMap').innerHTML = '<div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>OpenStreetMap</small></div>';
+}
+
+function renderSpotResults(results, heading) {
+  const container = document.getElementById('spotResults');
+  container.replaceChildren();
+  const label = document.createElement('span');
+  label.className = 'section-label';
+  label.textContent = heading;
+  container.append(label);
+  if (!results.length) {
+    const empty = document.createElement('p');
+    empty.className = 'spot-no-results';
+    empty.textContent = '場所が見つかりませんでした。別のキーワードで検索してください。';
+    container.append(empty);
+    return;
+  }
+  results.forEach((spot, index) => {
+    const button = document.createElement('button');
+    button.className = 'spot-result';
+    button.dataset.index = index;
+    button.innerHTML = '<span class="spot-pin">⌖</span><span><strong></strong><small></small></span><b>＋</b>';
+    button.querySelector('strong').textContent = spot.name;
+    button.querySelector('small').textContent = spot.address;
+    button.addEventListener('click', () => selectSpot(spot));
+    container.append(button);
+  });
+}
+
+function selectSpot(spot) {
+  selectedSpot = spot;
+  document.getElementById('spotSelected').hidden = false;
+  document.getElementById('selectedSpotName').textContent = spot.name;
+  document.getElementById('selectedSpotAddress').textContent = spot.address;
+  document.getElementById('addSelectedSpotBtn').disabled = false;
+  const mapUrl = `https://www.openstreetmap.org/export/embed.html?layer=mapnik&marker=${spot.lat},${spot.lon}&zoom=14`;
+  document.getElementById('spotMap').innerHTML = `<iframe title="${spot.name}の地図" src="${mapUrl}" loading="lazy"></iframe>`;
+}
+
+async function searchSpots(query) {
+  const localResults = placeCatalog.filter((spot) => `${spot.name}${spot.address}`.includes(query));
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=ja&limit=6&q=${encodeURIComponent(query)}`);
+    if (!response.ok) throw new Error('Search request failed');
+    const remoteResults = await response.json();
+    const normalized = remoteResults.map((spot) => ({ name: spot.name || spot.display_name.split(',')[0], address: spot.display_name, lat: Number(spot.lat), lon: Number(spot.lon), category: '検索結果' }));
+    renderSpotResults(normalized.length ? normalized : localResults, '検索結果');
+  } catch (error) {
+    renderSpotResults(localResults, 'おすすめの場所');
+  }
+}
+
+document.getElementById('addSpotBtn').addEventListener('click', openSpotModal);
+document.getElementById('emptyAddSpotBtn').addEventListener('click', openSpotModal);
+document.getElementById('closeSpotModal').addEventListener('click', closeSpotModal);
+document.getElementById('spotModal').addEventListener('click', (event) => {
+  if (event.target.id === 'spotModal') closeSpotModal();
+});
+document.getElementById('spotSearchForm').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const query = document.getElementById('spotSearchInput').value.trim();
+  if (query) searchSpots(query);
+});
+document.getElementById('addSelectedSpotBtn').addEventListener('click', () => {
+  if (!selectedSpot) return;
+  const selectedSpotName = selectedSpot.name;
+  const trip = tripPlans[activeTripId];
+  trip.spots = trip.spots || [];
+  if (!trip.spots.some((spot) => spot.name === selectedSpot.name)) trip.spots.push(selectedSpot);
+  trip.isNew = activeTripId !== 'setouchi';
+  saveTripPlans();
+  closeSpotModal();
+  renderTrip(activeTripId);
+  showToast(`${selectedSpotName} を旅程に追加しました`);
+});
 document.getElementById('editTripBtn').addEventListener('click', () => showToast('旅の基本情報を編集できます'));
 document.getElementById('printGuideBtn').addEventListener('click', () => showToast('しおりの印刷画面を準備しています'));
 document.getElementById('createMovieBtn').addEventListener('click', () => showToast('旅ムービーを生成しています…'));

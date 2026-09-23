@@ -63,6 +63,7 @@
           <article class="day-card"><div class="day-top"><div><span class="day-number">03</span><strong>日曜日</strong></div><span class="day-date">SEP 22</span></div><div class="day-line"><span class="time">10:00</span><div class="timeline-dot filled"></div><div class="place"><strong>豊島美術館</strong><span>水滴のような時間</span></div></div><div class="day-line"><span class="time">14:00</span><div class="timeline-dot"></div><div class="place"><strong>唐櫃港</strong><span>海を眺めてひと休み</span></div></div><div class="day-line"><span class="time">18:30</span><div class="timeline-dot"></div><div class="place"><strong>島キッチン</strong><span>最後の夜の晩ごはん</span></div></div><button class="day-more">＋ 予定を追加</button></article>
           <article class="day-card day-card-last"><div class="day-top"><div><span class="day-number">04</span><strong>月曜日</strong></div><span class="day-date">SEP 23</span></div><div class="day-line"><span class="time">11:00</span><div class="timeline-dot filled"></div><div class="place"><strong>直島銭湯「I♥湯」</strong><span>旅の終わりに、ひと風呂</span></div></div><div class="day-line"><span class="time">15:00</span><div class="timeline-dot"></div><div class="place"><strong>高松港</strong><span>また来よう</span></div></div><div class="day-empty">今日は、余白の時間。</div><button class="day-more">＋ 予定を追加</button></article>
         </div>
+        <div class="custom-spots" id="customSpotList" hidden></div>
         <div class="empty-state" id="planEmptyState" hidden><span class="empty-icon">✦</span><h2>ここから旅を計画しましょう</h2><p>行きたい場所や日程を追加すると、旅の予定がここに表示されます。</p><button class="primary-btn" id="emptyAddSpotBtn">最初の場所を追加 <span>＋</span></button></div>
       </section>
 
@@ -91,6 +92,23 @@
       <input id="tripNameInput" name="tripName" type="text" placeholder="例：秋の京都、喫茶店めぐり" maxlength="32" required>
       <button class="primary-btn" type="submit">プランを作成 <span>→</span></button>
     </form>
+  </div>
+  <div class="modal-backdrop" id="spotModal" hidden>
+    <section class="spot-modal" role="dialog" aria-modal="true" aria-labelledby="spotModalTitle">
+      <button class="modal-close" type="button" id="closeSpotModal" aria-label="閉じる">×</button>
+      <span class="section-label">ADD TO ITINERARY</span>
+      <h2 id="spotModalTitle">行きたい場所を探す</h2>
+      <form class="spot-search-form" id="spotSearchForm">
+        <label class="sr-only" for="spotSearchInput">場所を検索</label>
+        <input id="spotSearchInput" type="search" placeholder="場所、施設名、駅名を入力" autocomplete="off">
+        <button class="primary-btn" type="submit">検索 <span>⌕</span></button>
+      </form>
+      <div class="spot-search-layout">
+        <div class="spot-results" id="spotResults" aria-live="polite"></div>
+        <div class="spot-map" id="spotMap"><div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>OpenStreetMap</small></div></div>
+      </div>
+      <div class="spot-selected" id="spotSelected" hidden><div><span class="section-label">SELECTED PLACE</span><strong id="selectedSpotName"></strong><small id="selectedSpotAddress"></small></div><button class="primary-btn" type="button" id="addSelectedSpotBtn" disabled>この場所を追加 <span>＋</span></button></div>
+    </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
