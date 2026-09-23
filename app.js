@@ -10,6 +10,7 @@ const savedTripPlans = JSON.parse(localStorage.getItem('tabiTrips') || '{}');
 Object.assign(tripPlans, savedTripPlans);
 let activeTripId = 'setouchi';
 let selectedSpot = null;
+let pendingDeleteIndex = null;
 const placeCatalog = [
   { name: '直島・宮浦港', address: '香川県香川郡直島町', lat: 34.4607, lon: 133.9954, category: '移動' },
   { name: '地中美術館', address: '香川県香川郡直島町3449-1', lat: 34.4598, lon: 133.9857, category: '観光' },
@@ -30,11 +31,36 @@ function renderCustomSpots(trip) {
   spots.forEach((spot, index) => {
     const item = document.createElement('article');
     item.className = 'custom-spot';
-    item.innerHTML = `<span class="custom-spot-number">${String(index + 1).padStart(2, '0')}</span><div><strong></strong><span></span></div><i></i>`;
+    item.innerHTML = `<span class="custom-spot-number">${String(index + 1).padStart(2, '0')}</span><div><strong></strong><span></span></div><i></i><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
     item.querySelector('strong').textContent = spot.name;
     item.querySelector('span:nth-child(2)').textContent = spot.address;
     item.querySelector('i').textContent = spot.category || 'SPOT';
     list.append(item);
+  });
+}
+
+function renderHomeMap(trip) {
+  const spots = trip.spots || [];
+  const map = document.getElementById('homeMapContent');
+  const pinList = document.getElementById('homePinList');
+  const mapLink = document.getElementById('openGoogleMapBtn');
+  pinList.replaceChildren();
+  if (!spots.length) {
+    map.innerHTML = '<div class="map-placeholder"><span>⌖</span><strong>場所を追加すると、ここにピンが表示されます</strong><small>Google Maps</small></div>';
+    mapLink.href = 'https://www.google.com/maps';
+    return;
+  }
+  const query = spots.map((spot) => `${spot.name} ${spot.address}`).join(' ');
+  map.innerHTML = `<iframe title="${trip.title}のGoogle Maps" src="https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed" loading="lazy"></iframe>`;
+  mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  spots.forEach((spot, index) => {
+    const item = document.createElement('article');
+    item.className = 'home-pin';
+    item.innerHTML = `<span class="pin-index">${index + 1}</span><div><strong></strong><small></small></div><a target="_blank" rel="noreferrer" aria-label="Google Mapsで開く">↗</a><button class="delete-spot" data-spot-index="${index}" aria-label="場所を削除">×</button>`;
+    item.querySelector('strong').textContent = spot.name;
+    item.querySelector('small').textContent = spot.address;
+    item.querySelector('a').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
+    pinList.append(item);
   });
 }
 
@@ -77,6 +103,7 @@ function renderTrip(tripId, notify = true) {
   document.getElementById('guideEmptyState').hidden = isTemplateTrip;
   document.getElementById('movieEmptyState').hidden = isTemplateTrip;
   renderCustomSpots(trip);
+  renderHomeMap(trip);
   document.querySelectorAll('.trip-option').forEach((option) => option.classList.toggle('active', option.dataset.trip === tripId));
   if (notify) showToast(`${trip.title} に切り替えました`);
 }
@@ -144,7 +171,7 @@ function closeSpotModal() {
   document.getElementById('spotModal').hidden = true;
   selectedSpot = null;
   document.getElementById('spotSelected').hidden = true;
-  document.getElementById('spotMap').innerHTML = '<div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>OpenStreetMap</small></div>';
+  document.getElementById('spotMap').innerHTML = '<div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>Google Maps</small></div>';
 }
 
 function renderSpotResults(results, heading) {
@@ -179,7 +206,7 @@ function selectSpot(spot) {
   document.getElementById('selectedSpotName').textContent = spot.name;
   document.getElementById('selectedSpotAddress').textContent = spot.address;
   document.getElementById('addSelectedSpotBtn').disabled = false;
-  const mapUrl = `https://www.openstreetmap.org/export/embed.html?layer=mapnik&marker=${spot.lat},${spot.lon}&zoom=14`;
+  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${spot.name} ${spot.address}`)}&output=embed`;
   document.getElementById('spotMap').innerHTML = `<iframe title="${spot.name}の地図" src="${mapUrl}" loading="lazy"></iframe>`;
 }
 
@@ -190,9 +217,10 @@ async function searchSpots(query) {
     if (!response.ok) throw new Error('Search request failed');
     const remoteResults = await response.json();
     const normalized = remoteResults.map((spot) => ({ name: spot.name || spot.display_name.split(',')[0], address: spot.display_name, lat: Number(spot.lat), lon: Number(spot.lon), category: '検索結果' }));
-    renderSpotResults(normalized.length ? normalized : localResults, '検索結果');
+    const related = localResults.filter((localSpot) => !normalized.some((spot) => spot.name === localSpot.name));
+    renderSpotResults([...normalized, ...related], normalized.length ? '検索結果・類似候補' : '類似候補');
   } catch (error) {
-    renderSpotResults(localResults, 'おすすめの場所');
+    renderSpotResults(localResults, '類似候補');
   }
 }
 
@@ -218,6 +246,36 @@ document.getElementById('addSelectedSpotBtn').addEventListener('click', () => {
   closeSpotModal();
   renderTrip(activeTripId);
   showToast(`${selectedSpotName} を旅程に追加しました`);
+});
+function openDeleteModal(index) {
+  const spot = tripPlans[activeTripId]?.spots?.[index];
+  if (!spot) return;
+  pendingDeleteIndex = index;
+  document.getElementById('deleteModalCopy').textContent = `「${spot.name}」を旅のプランから削除します。操作は取り消せません。`;
+  document.getElementById('deleteModal').hidden = false;
+}
+
+function closeDeleteModal() {
+  pendingDeleteIndex = null;
+  document.getElementById('deleteModal').hidden = true;
+}
+
+document.addEventListener('click', (event) => {
+  const deleteButton = event.target.closest('.delete-spot');
+  if (deleteButton) openDeleteModal(Number(deleteButton.dataset.spotIndex));
+});
+document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+document.getElementById('deleteModal').addEventListener('click', (event) => {
+  if (event.target.id === 'deleteModal') closeDeleteModal();
+});
+document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+  const trip = tripPlans[activeTripId];
+  if (!trip?.spots || pendingDeleteIndex === null) return;
+  const deletedSpot = trip.spots.splice(pendingDeleteIndex, 1)[0];
+  saveTripPlans();
+  closeDeleteModal();
+  renderTrip(activeTripId);
+  showToast(`${deletedSpot.name} を削除しました`);
 });
 document.getElementById('editTripBtn').addEventListener('click', () => showToast('旅の基本情報を編集できます'));
 document.getElementById('printGuideBtn').addEventListener('click', () => showToast('しおりの印刷画面を準備しています'));

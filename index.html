@@ -56,6 +56,7 @@
         </div>
         <div class="summary-strip"><div class="summary-item"><span>DATE</span><strong id="summaryDate">09.20 — 09.23</strong></div><div class="summary-item"><span>DAYS</span><strong><span id="summaryDays">4</span> <small>days</small></strong></div><div class="summary-item"><span>MEMBERS</span><strong><span id="summaryMembers">3</span> <small>travellers</small></strong></div><div class="summary-item highlight"><span>MOOD</span><strong id="summaryMood">ゆったり、発見</strong></div><button class="outline-btn" id="editTripBtn">編集する <span>↗</span></button></div>
 
+        <div class="home-map-panel"><div class="map-panel-head"><div><span class="section-label">MAP OF YOUR TRIP</span><h2>旅のマップ <small>GOOGLE MAPS</small></h2></div><a id="openGoogleMapBtn" href="https://www.google.com/maps" target="_blank" rel="noreferrer">Google Mapsで開く <span>↗</span></a></div><div class="home-map-content" id="homeMapContent"><div class="map-placeholder"><span>⌖</span><strong>場所を追加すると、ここにピンが表示されます</strong><small>Google Maps</small></div></div><div class="home-pin-list" id="homePinList"></div></div>
         <div class="section-heading"><div><span class="section-label">YOUR ITINERARY</span><h2>旅の予定 <small id="itineraryMeta">4 DAYS · 8 PLACES</small></h2></div><button class="add-btn" id="addSpotBtn"><span>＋</span> 場所を追加</button></div>
         <div class="itinerary-grid">
           <article class="day-card"><div class="day-top"><div><span class="day-number">01</span><strong>金曜日</strong></div><span class="day-date">SEP 20</span></div><div class="day-line"><span class="time">10:30</span><div class="timeline-dot filled"></div><div class="place"><strong>高松港</strong><span>旅のはじまり。フェリーに乗る</span></div></div><div class="day-line"><span class="time">13:00</span><div class="timeline-dot"></div><div class="place"><strong>直島・宮浦港</strong><span>島に到着 <i class="tag">移動</i></span></div></div><div class="day-line"><span class="time">15:30</span><div class="timeline-dot"></div><div class="place"><strong>ベネッセハウス ミュージアム</strong><span>アートに浸る</span></div></div><button class="day-more">＋ 予定を追加</button></article>
@@ -105,9 +106,17 @@
       </form>
       <div class="spot-search-layout">
         <div class="spot-results" id="spotResults" aria-live="polite"></div>
-        <div class="spot-map" id="spotMap"><div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>OpenStreetMap</small></div></div>
+        <div class="spot-map" id="spotMap"><div class="map-placeholder"><span>⌖</span><strong>場所を選ぶと地図が表示されます</strong><small>Google Maps</small></div></div>
       </div>
       <div class="spot-selected" id="spotSelected" hidden><div><span class="section-label">SELECTED PLACE</span><strong id="selectedSpotName"></strong><small id="selectedSpotAddress"></small></div><button class="primary-btn" type="button" id="addSelectedSpotBtn" disabled>この場所を追加 <span>＋</span></button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="deleteModal" hidden>
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+      <span class="confirm-icon">!</span>
+      <h2 id="deleteModalTitle">場所を削除しますか？</h2>
+      <p id="deleteModalCopy">この地点を旅のプランから削除します。操作は取り消せません。</p>
+      <div class="confirm-actions"><button class="outline-btn" type="button" id="cancelDeleteBtn">キャンセル</button><button class="danger-btn" type="button" id="confirmDeleteBtn">削除する</button></div>
     </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
