@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f3ec" />
+  <title>tabi note | 旅を、物語に。</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Shippori+Mincho:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="tabi note ホーム">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span>tabi note</span>
+      </a>
+      <p class="sidebar-caption">旅を、物語に。</p>
+      <div class="trip-switcher">
+        <div class="trip-switcher-head"><span class="eyebrow">MY TRIPS</span><button id="newTripBtn" aria-label="新しい旅行プランを作成">＋</button></div>
+        <div class="trip-options" id="tripOptions">
+          <button class="trip-option active" data-trip="setouchi"><span class="trip-color coral"></span><span><strong>瀬戸内、光の島へ</strong><small>09.20 — 09.23</small></span><b>✓</b></button>
+          <button class="trip-option" data-trip="hokkaido"><span class="trip-color blue"></span><span><strong>北の大地をめぐる</strong><small>10.11 — 10.15</small></span><b>✓</b></button>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="メインナビゲーション">
+        <button class="nav-item active" data-view="plan"><span class="nav-icon">✦</span><span>旅を計画する</span><span class="nav-count">01</span></button>
+        <button class="nav-item" data-view="guide"><span class="nav-icon">▤</span><span>旅のしおり</span><span class="nav-count">02</span></button>
+        <button class="nav-item" data-view="movie"><span class="nav-icon">▶</span><span>旅ムービー</span><span class="nav-count">03</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="trip-mini">
+          <div class="trip-mini-top"><span class="eyebrow">CURRENT TRIP</span><span class="status-dot"></span></div>
+          <strong id="currentTripTitle">瀬戸内、光の島へ</strong>
+          <span id="currentTripDates">2024.09.20 — 09.23</span>
+          <div class="mini-progress"><span></span></div>
+          <small>計画進行度 <b id="currentTripProgress">72%</b></small>
+        </div>
+        <button class="settings-btn"><span>◌</span> 設定</button>
+        <div class="profile"><div class="avatar">D</div><div><strong>Daiki</strong><span>My travel space</span></div><span class="more">•••</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="top">
+      <header class="topbar">
+        <div class="breadcrumb"><span>MY TRIPS</span><i>/</i><strong id="breadcrumbTrip">瀬戸内、光の島へ</strong></div>
+        <div class="top-actions"><button class="icon-btn" aria-label="通知">♧<span class="notification-dot"></span></button><button class="share-btn">共有 <span>↗</span></button></div>
+      </header>
+
+      <section class="view plan-view active-view" data-panel="plan">
+        <div class="hero-row">
+          <div><p class="kicker">TRIP PLANNER <span>●</span> <span id="tripSeason">2024 AUTUMN</span></p><h1><span id="tripTitlePrefix">瀬戸内、</span><em id="tripTitleAccent">光の島へ。</em></h1><p class="hero-copy">見たい景色と、会いたい人。<br>旅の余白まで、大切に計画しよう。</p></div>
+          <div class="hero-note"><span class="pin">✳</span><span>予定は変更できます。<br>気の向くままに、寄り道も。</span></div>
+        </div>
+        <div class="summary-strip"><div class="summary-item"><span>DATE</span><strong id="summaryDate">09.20 — 09.23</strong></div><div class="summary-item"><span>DAYS</span><strong><span id="summaryDays">4</span> <small>days</small></strong></div><div class="summary-item"><span>MEMBERS</span><strong><span id="summaryMembers">3</span> <small>travellers</small></strong></div><div class="summary-item highlight"><span>MOOD</span><strong id="summaryMood">ゆったり、発見</strong></div><button class="outline-btn" id="editTripBtn">編集する <span>↗</span></button></div>
+
+        <div class="section-heading"><div><span class="section-label">YOUR ITINERARY</span><h2>旅の予定 <small id="itineraryMeta">4 DAYS · 8 PLACES</small></h2></div><button class="add-btn" id="addSpotBtn"><span>＋</span> 場所を追加</button></div>
+        <div class="itinerary-grid">
+          <article class="day-card"><div class="day-top"><div><span class="day-number">01</span><strong>金曜日</strong></div><span class="day-date">SEP 20</span></div><div class="day-line"><span class="time">10:30</span><div class="timeline-dot filled"></div><div class="place"><strong>高松港</strong><span>旅のはじまり。フェリーに乗る</span></div></div><div class="day-line"><span class="time">13:00</span><div class="timeline-dot"></div><div class="place"><strong>直島・宮浦港</strong><span>島に到着 <i class="tag">移動</i></span></div></div><div class="day-line"><span class="time">15:30</span><div class="timeline-dot"></div><div class="place"><strong>ベネッセハウス ミュージアム</strong><span>アートに浸る</span></div></div><button class="day-more">＋ 予定を追加</button></article>
+          <article class="day-card"><div class="day-top"><div><span class="day-number">02</span><strong>土曜日</strong></div><span class="day-date">SEP 21</span></div><div class="day-line"><span class="time">09:00</span><div class="timeline-dot filled"></div><div class="place"><strong>地中美術館</strong><span>朝いちばんの静けさ</span></div></div><div class="day-line"><span class="time">12:30</span><div class="timeline-dot"></div><div class="place"><strong>島食DOみやんだ</strong><span>お昼ごはん <i class="tag food">食べる</i></span></div></div><div class="day-line"><span class="time">16:00</span><div class="timeline-dot"></div><div class="place"><strong>黄かぼちゃ</strong><span>海辺で写真を撮る</span></div></div><button class="day-more">＋ 予定を追加</button></article>
+          <article class="day-card"><div class="day-top"><div><span class="day-number">03</span><strong>日曜日</strong></div><span class="day-date">SEP 22</span></div><div class="day-line"><span class="time">10:00</span><div class="timeline-dot filled"></div><div class="place"><strong>豊島美術館</strong><span>水滴のような時間</span></div></div><div class="day-line"><span class="time">14:00</span><div class="timeline-dot"></div><div class="place"><strong>唐櫃港</strong><span>海を眺めてひと休み</span></div></div><div class="day-line"><span class="time">18:30</span><div class="timeline-dot"></div><div class="place"><strong>島キッチン</strong><span>最後の夜の晩ごはん</span></div></div><button class="day-more">＋ 予定を追加</button></article>
+          <article class="day-card day-card-last"><div class="day-top"><div><span class="day-number">04</span><strong>月曜日</strong></div><span class="day-date">SEP 23</span></div><div class="day-line"><span class="time">11:00</span><div class="timeline-dot filled"></div><div class="place"><strong>直島銭湯「I♥湯」</strong><span>旅の終わりに、ひと風呂</span></div></div><div class="day-line"><span class="time">15:00</span><div class="timeline-dot"></div><div class="place"><strong>高松港</strong><span>また来よう</span></div></div><div class="day-empty">今日は、余白の時間。</div><button class="day-more">＋ 予定を追加</button></article>
+        </div>
+        <div class="empty-state" id="planEmptyState" hidden><span class="empty-icon">✦</span><h2>ここから旅を計画しましょう</h2><p>行きたい場所や日程を追加すると、旅の予定がここに表示されます。</p><button class="primary-btn" id="emptyAddSpotBtn">最初の場所を追加 <span>＋</span></button></div>
+      </section>
+
+      <section class="view guide-view" data-panel="guide" hidden>
+        <div class="subpage-head"><div><p class="kicker">TRAVEL GUIDE <span>●</span> READY TO GO</p><h1>旅のしおり</h1><p>予定と気持ちを一冊に。旅先で開く、私たちだけのガイド。</p></div><button class="primary-btn" id="printGuideBtn">しおりを印刷 <span>↗</span></button></div>
+        <div class="empty-state" id="guideEmptyState" hidden><span class="empty-icon">▤</span><h2>旅程ができると、しおりになります</h2><p>このプランにはまだ予定がありません。旅の計画を追加すると、ここでしおりを作成できます。</p><button class="primary-btn" data-view="plan">旅を計画する <span>→</span></button></div>
+        <div class="guide-layout"><div class="guide-cover"><div class="cover-art"><span class="sun"></span><span class="island island-a"></span><span class="island island-b"></span><span class="cover-sea"></span><span class="cover-title">Setouchi<br><i>光の島へ。</i></span><span class="cover-date">2024 / 09 / 20 — 23</span></div><div class="cover-caption"><strong>瀬戸内、光の島へ。</strong><span>THE ISLANDS OF LIGHT</span></div></div><div class="guide-details"><div class="detail-block"><span class="section-label">TRIP OVERVIEW</span><h2>この旅について</h2><p>島の時間に身をゆだねて、アートと海と、おいしいものを巡る4日間。急がず、迷ったら海の見える方へ。</p></div><div class="packing"><span class="section-label">CHECKLIST</span><h2>持ちもの <small>3 / 6</small></h2><label><input type="checkbox" checked> カメラ・予備バッテリー</label><label><input type="checkbox" checked> 歩きやすい靴</label><label><input type="checkbox" checked> フェリーのチケット</label><label><input type="checkbox"> 日焼け止め</label><label><input type="checkbox"> 薄手の羽織り</label><label><input type="checkbox"> 旅のノート</label></div><div class="guide-quote">“ 急がない旅は、景色の中に<br>自分の時間を見つける旅。”</div></div></div>
+        <div class="guide-days"><div class="section-heading"><div><span class="section-label">DAY BY DAY</span><h2>4日間のしおり</h2></div><button class="outline-btn">PDFで書き出す <span>↓</span></button></div><div class="guide-day-row"><b>01</b><strong>金</strong><span>高松港 → 直島</span><i>アートと、島の夕暮れ</i><span>3 spots　→</span></div><div class="guide-day-row"><b>02</b><strong>土</strong><span>直島を歩く</span><i>光の中の建築</i><span>3 spots　→</span></div><div class="guide-day-row"><b>03</b><strong>日</strong><span>豊島・唐櫃</span><i>水滴のような時間</i><span>3 spots　→</span></div></div>
+      </section>
+
+      <section class="view movie-view" data-panel="movie" hidden>
+        <div class="subpage-head"><div><p class="kicker">MEMORIES IN MOTION <span>●</span> 18 PHOTOS</p><h1>旅ムービー</h1><p>写真フォルダを選んで、旅の余韻を一本のムービーに。</p></div><button class="primary-btn" id="createMovieBtn">ムービーを作る <span>▶</span></button></div>
+        <div class="empty-state" id="movieEmptyState" hidden><span class="empty-icon">▶</span><h2>写真を集めて、旅を動かしましょう</h2><p>このプランにはまだ写真がありません。まずは旅程を作り、写真フォルダを追加してください。</p><button class="primary-btn" data-view="plan">旅を計画する <span>→</span></button></div>
+        <div class="movie-workspace"><div class="video-preview"><div class="preview-image" id="previewImage"><div class="preview-shade"></div><span class="preview-location">NAOSHIMA, JAPAN</span><div class="preview-copy"><small>DAY 01</small><strong>光の島へ、<br>旅のはじまり。</strong></div><button class="play-btn" id="playBtn">▶</button><span class="preview-time">00:12 / 01:24</span></div><div class="video-controls"><button>◀</button><div class="scrub"><span></span></div><button>▶</button><span>▮▮</span><button class="fullscreen">↗</button></div></div><div class="movie-side"><div class="folder-card"><div class="folder-icon">▧</div><div><span class="section-label">PHOTO FOLDER</span><strong>瀬戸内旅行 / 2024</strong><span>18 photos · 42.8 MB</span></div><button id="folderBtn">変更</button></div><div class="movie-settings"><span class="section-label">MOVIE STYLE</span><div class="style-options"><button class="style-choice selected"><span class="style-swatch warm"></span><b>cinematic</b><small>静かな余韻</small></button><button class="style-choice"><span class="style-swatch bright"></span><b>sunny days</b><small>軽やかな記録</small></button><button class="style-choice"><span class="style-swatch mono"></span><b>documentary</b><small>飾らない日々</small></button></div><label class="music-row"><span>♪</span><span>音楽をつける</span><select><option>island breeze</option><option>slow morning</option><option>without music</option></select></label></div></div></div>
+        <div class="photo-strip"><div class="section-heading"><div><span class="section-label">SELECTED MOMENTS</span><h2>思い出を選ぶ <small>18 / 18</small></h2></div><button class="outline-btn">すべて選択解除</button></div><div class="thumbs"><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1494783367193-149034c05e8f?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1500534623283-312aade485b7?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=500&q=80')"><span>✓</span></button><button class="thumb selected" style="--bg:url('https://images.unsplash.com/photo-1472396961693-142e6e269027?w=500&q=80')"><span>✓</span></button><button class="thumb add-photo"><span>＋</span><small>写真を追加</small></button></div></div>
+      </section>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="tripModal" hidden>
+    <form class="trip-modal" id="tripForm">
+      <button class="modal-close" type="button" id="closeTripModal" aria-label="閉じる">×</button>
+      <span class="section-label">NEW TRIP PLAN</span>
+      <h2>新しい旅をはじめる</h2>
+      <p>まずは旅の名前をつけましょう。日程や行き先はあとから追加できます。</p>
+      <label for="tripNameInput">旅の名前</label>
+      <input id="tripNameInput" name="tripName" type="text" placeholder="例：秋の京都、喫茶店めぐり" maxlength="32" required>
+      <button class="primary-btn" type="submit">プランを作成 <span>→</span></button>
+    </form>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
